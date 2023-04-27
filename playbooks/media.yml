@@ -1,0 +1,28 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Copy content and update
+  hosts: media
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Copy TV
+      copy:
+        src: ~/Downloads/_media/tv/
+        dest: /media/tvshows/
+        mode: '0644'
+
+    - name: Copy Movies
+      copy:
+        src: ~/Downloads/_media/movies/
+        dest: /media/movies/
+        mode: '0644'
+        
+    - name: Update
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+        name: "*"
+        state: latest
+
+...
