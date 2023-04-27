@@ -1,0 +1,29 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Update Pihole OS and Service
+  hosts: pihole
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Copy Custom DNS
+      template:
+        src: custom.list.j2
+        dest: /etc/pihole/custom.list
+        mode: '0644'
+
+    - name: Update applications
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+        name: "*"
+        state: latest
+
+    - name: Update pihole
+      command: /usr/local/bin/pihole -up
+
+    - name: Reboot machines 1by1
+      throttle: 1
+      reboot:
+        reboot_timeout: 300
+...

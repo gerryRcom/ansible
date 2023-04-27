@@ -1,0 +1,20 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Update External Servers
+  hosts: external
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Update applications
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+        name: "*"
+        state: latest
+
+    - name: Reboot machines 1by1
+      throttle: 1
+      reboot:
+        reboot_timeout: 300
+...
