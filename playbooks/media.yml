@@ -12,11 +12,45 @@
         dest: /media/tvshows/
         mode: '0644'
 
+    - name: Gather TV Source
+      become: false
+      find:
+        paths: ~/Downloads/_media/tv
+        recurse: true
+        file_type: any
+      delegate_to: localhost
+      register: collected_tv_files
+      
+    - name: Delete TV Source
+      become: false
+      file:
+        path: ~/Downloads/_media/tv
+        state: absent
+      delegate_to: localhost
+      with_items: "{{ collected_tv_files }}"
+
     - name: Copy Movies
       copy:
         src: ~/Downloads/_media/movies/
         dest: /media/movies/
         mode: '0644'
+
+    - name: Gather Movie Source
+      become: false
+      find:
+        paths: ~/Downloads/_media/movies
+        recurse: true
+        file_type: any
+      delegate_to: localhost
+      register: collected_movie_files
+
+    - name: Delete Movie Source
+      become: false
+      file:
+        path: ~/Downloads/_media/movies
+        state: absent
+      delegate_to: localhost
+      with_items: "{{ collected_movie_files }}"
         
     - name: Update
       apt:
