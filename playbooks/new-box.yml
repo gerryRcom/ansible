@@ -1,0 +1,53 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Config New Server
+  become: true
+  hosts: new
+  gather_facts: false
+
+  tasks:
+
+    - name: Set ssh key
+      ansible.posix.authorized_key:
+        user: admin01
+        state: present
+        key: "{{ lookup('file', '~/.ssh/lan_rsa.pub') }}"
+
+    - name: Update applications
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+        name: "*"
+        state: latest
+
+    - name: Disable SSH Password Login
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#PasswordAuthentication yes'
+        line: 'PasswordAuthentication no'
+
+    - name: Install applications
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+        state: present
+        name:
+          - ufw
+
+    - name: Configure UFW SSH
+      community.general.ufw:
+        rule: allow
+        name: OpenSSH
+
+    - name: Enable UFW
+      community.general.ufw:
+        state: enabled
+        policy: deny
+    
+    - name: Reboot Machine
+      reboot:
+
+    - name: Reload UFW
+      community.general.ufw:
+        state: reloaded
+...
