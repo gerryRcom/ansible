@@ -20,10 +20,16 @@
         name: "*"
         state: latest
 
-    - name: Disable SSH Password Login
+    - name: Disable SSH Password Login 1
       ansible.builtin.lineinfile:
         path: /etc/ssh/sshd_config
         regexp: '^#PasswordAuthentication yes'
+        line: 'PasswordAuthentication no'
+        
+    - name: Disable SSH Password Login 2
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config.d/50-cloud-init.conf
+        regexp: '^PasswordAuthentication yes'
         line: 'PasswordAuthentication no'
 
     - name: Install applications
@@ -46,8 +52,4 @@
     
     - name: Reboot Machine
       reboot:
-
-    - name: Reload UFW
-      community.general.ufw:
-        state: reloaded
 ...
