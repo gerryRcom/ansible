@@ -1,0 +1,60 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Configure and start Nebula
+  hosts: nebula
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Create dir for Nebula files
+    file:
+      path: "/usr/local/bin/nebula"
+      state: directory
+      mode: '0700'
+
+  - name: Copy cert files
+    copy:
+      src: "{{ item }}"
+      dest: "/usr/local/bin/nebula"
+      mode: '0600'
+    loop:
+      - /home/gerryr/.nebula/{{ cert_name }}.key
+      - /home/gerryr/.nebula/{{ cert_name }}.crt
+      - /home/gerryr/.nebula/ca.crt
+
+  - name: Copy nebula binary
+    copy:
+      src: "{{ item }}"
+      dest: "/usr/local/bin/nebula/"
+      mode: '0700'
+    loop:
+      - /home/gerryr/.nebula/nebula
+  
+  - name: Copy Nebula config
+    template:
+      src: nebula.yml.j2
+      dest: /usr/local/bin/nebula/{{ cert_name }}.yml
+      mode: '0644'
+
+  - name: Copy service
+    template:
+      src: nebula.service.j2
+      dest: /etc/systemd/system/nebula.service
+      mode: '0644'
+
+  - name: Start Nebula service
+    ansible.builtin.service:
+      name: nebula
+      state: started
+      enabled: yes
+
+  - name: Configure UFW SSH
+    community.general.ufw:
+      rule: allow
+      port: '4242'
+      proto: udp
+
+  - name: Reload UFW (to apply new rule)
+    community.general.ufw:
+      state: reloaded
+...
